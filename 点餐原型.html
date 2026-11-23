@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>留子厨房 LZ Kitchen</title>
+<style>
+  :root{
+    --bg:#ffffff;
+    --ink:#1f2622;
+    --ink-2:#6b726c;
+    --ink-3:#9aa19b;
+    --line:#eceeed;
+    --green:#2d4a3e;
+    --green-soft:#eef3ef;
+    --green-mid:#8fb39e;
+    --price:#c2452d;
+    --radius:18px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    background:#f4f5f3;color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Noto Sans SC","Helvetica Neue",sans-serif;
+    display:flex;justify-content:center;
+  }
+  .phone{
+    width:100%;max-width:420px;background:var(--bg);height:100dvh;
+    position:relative;display:flex;flex-direction:column;overflow:hidden;
+    box-shadow:0 0 40px rgba(0,0,0,.06);
+  }
+
+  /* ===== 视图切换 ===== */
+  .view{display:none;flex-direction:column;flex:1;min-height:0;animation:fade .3s ease both;}
+  .view.active{display:flex;}
+  .view-scroll{flex:1;min-height:0;overflow-y:auto;}
+  @keyframes fade{from{opacity:0;transform:translateX(10px);}to{opacity:1;transform:translateX(0);}}
+
+  /* ===== 顶部导航 ===== */
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:18px 20px 10px;flex-shrink:0;}
+  .nav .back{
+    width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    color:var(--ink);background:#f6f7f6;cursor:pointer;transition:all .25s ease;
+  }
+  .nav .back:active{transform:scale(.92);background:#eef0ee;}
+  .nav .title{font-size:16px;font-weight:600;letter-spacing:.02em;}
+  .nav .placeholder{width:36px;}
+  .cart-entry{
+    position:relative;width:38px;height:38px;border-radius:50%;background:#f6f7f6;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .25s ease;
+  }
+  .cart-entry:active{transform:scale(.92);background:#eef0ee;}
+  .cart-entry svg{width:25px;height:25px;}
+  .cart-entry .badge{
+    position:absolute;top:-3px;right:-5px;background:var(--price);color:#fff;
+    font-size:10.5px;min-width:18px;height:18px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 5px;font-weight:600;
+  }
+
+  /* ===== 首页 ===== */
+  .shop-head{padding:6px 20px 16px;}
+  .shop-head .name{font-size:24px;font-weight:700;letter-spacing:.01em;}
+  .shop-head .name span{font-size:14px;font-weight:500;color:var(--ink-3);margin-left:6px;letter-spacing:.04em;}
+  .group-label{padding:6px 20px 10px;font-size:12.5px;color:var(--ink-3);letter-spacing:.05em;}
+
+  .menu-list{padding:0 16px 20px;display:flex;flex-direction:column;gap:14px;}
+  .menu-card{
+    display:flex;gap:14px;border:1px solid var(--line);border-radius:var(--radius);
+    padding:14px;cursor:pointer;background:var(--bg);transition:all .25s ease;
+    animation:rise .5s ease both;
+  }
+  .menu-card:active{transform:scale(.98);background:#fafbfa;}
+  @keyframes rise{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+  .menu-thumb{
+    width:96px;height:96px;border-radius:14px;flex-shrink:0;
+    background:linear-gradient(135deg,#f3f0e9,#e9efe9);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .menu-thumb svg{width:42px;height:42px;opacity:.55;}
+  .menu-info{flex:1;display:flex;flex-direction:column;justify-content:space-between;min-width:0;}
+  .menu-info .n{font-size:16px;font-weight:600;}
+  .menu-info .d{font-size:12px;color:var(--ink-3);margin-top:4px;line-height:1.5;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+  .menu-info .p{font-size:16px;font-weight:700;color:var(--price);}
+  .menu-info .p .yen{font-size:12px;}
+
+  /* ===== 详情页 ===== */
+  .dish-img{
+    margin:0 16px;width:calc(100% - 32px);aspect-ratio:16/10;border-radius:var(--radius);
+    background:linear-gradient(135deg,#f3f0e9,#e9efe9);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  }
+  .dish-img svg{width:74px;height:74px;opacity:.55;}
+  .dish-body{padding:18px 20px 0;}
+  .dish-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;}
+  .dish-name{font-size:19px;font-weight:600;}
+  .dish-desc{margin-top:8px;font-size:13px;line-height:1.7;color:var(--ink-2);}
+  .dish-price{font-size:20px;font-weight:700;color:var(--price);white-space:nowrap;}
+  .dish-price .yen{font-size:13px;}
+
+  .section{padding:20px 20px 0;}
+  .section-label{font-size:13px;color:var(--ink-3);margin-bottom:12px;letter-spacing:.03em;}
+  .chips{display:flex;flex-wrap:wrap;gap:10px;}
+  .chip{
+    padding:9px 15px;border-radius:22px;font-size:13.5px;border:1px solid var(--line);
+    background:#fafbfa;color:var(--ink-2);cursor:pointer;user-select:none;transition:all .25s ease;
+  }
+  .chip:active{transform:scale(.96);}
+  .chip .add{font-size:12px;color:var(--price);margin-left:3px;}
+  .chip.on{background:var(--green-soft);border-color:var(--green-mid);color:var(--green);font-weight:500;}
+  .chip.on .add{color:var(--green);}
+
+  .qty-row{display:flex;align-items:center;justify-content:space-between;padding:20px 20px 0;}
+  .qty-row .lab{font-size:15px;font-weight:500;}
+  .stepper{display:flex;align-items:center;gap:16px;}
+  .stepper button{
+    width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:#fafbfa;
+    color:var(--ink);font-size:17px;line-height:1;cursor:pointer;transition:all .2s ease;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .stepper button:active{transform:scale(.9);}
+  .stepper button:disabled{opacity:.35;cursor:not-allowed;}
+  .stepper .num{font-size:16px;font-weight:600;min-width:20px;text-align:center;}
+
+  /* ===== 底部栏 ===== */
+  .footer{
+    flex-shrink:0;padding:14px 20px calc(18px + env(safe-area-inset-bottom));
+    display:flex;align-items:center;justify-content:space-between;gap:14px;
+    background:var(--bg);border-top:1px solid var(--line);
+  }
+  .total{display:flex;flex-direction:column;}
+  .total .t-label{font-size:11.5px;color:var(--ink-3);}
+  .total .t-price{font-size:22px;font-weight:700;color:var(--price);}
+  .total .t-price .yen{font-size:13px;}
+  .btn{
+    border:none;cursor:pointer;font-family:inherit;background:var(--green);color:#fff;
+    font-size:15px;font-weight:600;padding:15px 34px;border-radius:26px;letter-spacing:.02em;transition:all .25s ease;
+  }
+  .btn:active{transform:scale(.96);opacity:.92;}
+  .btn:disabled{opacity:.55;cursor:not-allowed;}
+
+  /* ===== 确认页 ===== */
+  .cart-list{padding:16px 20px 0;display:flex;flex-direction:column;gap:16px;}
+  .cart-item{border:1px solid var(--line);border-radius:var(--radius);padding:16px;}
+  .cart-item .ci-top{display:flex;justify-content:space-between;align-items:flex-start;}
+  .cart-item .ci-name{font-size:15.5px;font-weight:600;}
+  .cart-item .ci-price{font-size:15px;font-weight:700;color:var(--price);}
+  .cart-item .ci-price .yen{font-size:12px;}
+  .ci-opts{margin-top:8px;font-size:12.5px;color:var(--ink-2);line-height:1.6;}
+  .ci-opts .tag{display:inline-block;background:#f4f6f4;border-radius:10px;padding:2px 8px;margin:2px 6px 2px 0;}
+  .ci-qty{margin-top:8px;font-size:12.5px;color:var(--ink-3);}
+
+  .field{padding:20px 20px 0;}
+  .field-label{font-size:13px;color:var(--ink-3);margin-bottom:12px;letter-spacing:.03em;}
+  .field input{
+    width:100%;border:1px solid var(--line);border-radius:14px;padding:12px 14px;
+    font-size:13.5px;font-family:inherit;color:var(--ink);background:#fafbfa;outline:none;
+    transition:border-color .25s ease,background .25s ease;
+  }
+  .field input:focus{border-color:var(--green-mid);background:#fff;}
+  .field input::placeholder{color:var(--ink-3);}
+
+  .note{padding:20px 20px 0;}
+  .note textarea{
+    width:100%;min-height:80px;border:1px solid var(--line);border-radius:14px;
+    padding:12px 14px;font-size:13.5px;font-family:inherit;color:var(--ink);background:#fafbfa;
+    resize:none;outline:none;transition:border-color .25s ease,background .25s ease;
+  }
+  .note textarea:focus{border-color:var(--green-mid);background:#fff;}
+  .note textarea::placeholder{color:var(--ink-3);}
+
+  .empty{padding:60px 20px;text-align:center;color:var(--ink-3);font-size:14px;}
+
+  /* ===== Toast ===== */
+  .toast{
+    position:fixed;left:50%;bottom:110px;transform:translateX(-50%) translateY(10px);
+    background:rgba(31,38,34,.92);color:#fff;font-size:13.5px;padding:11px 18px;border-radius:22px;
+    opacity:0;pointer-events:none;transition:all .3s ease;z-index:50;white-space:nowrap;max-width:88%;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+<div class="phone">
+
+  <!-- ============ 视图：首页菜单 ============ -->
+  <div class="view active" id="view-home">
+    <div class="nav">
+      <div class="placeholder"></div>
+      <div class="title">菜单</div>
+      <div class="cart-entry" onclick="go('confirm')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#1f2622" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1.6"/><circle cx="20" cy="21" r="1.6"/><path d="M1 1h4l2.6 12.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>
+        <div class="badge" id="cart-badge" style="display:none">0</div>
+      </div>
+    </div>
+    <div class="view-scroll">
+      <div class="shop-head">
+        <div class="name">留子厨房<span>LZ Kitchen</span></div>
+      </div>
+      <div class="group-label">炒饭 · 热菜</div>
+      <div class="menu-list" id="menu-list"></div>
+    </div>
+  </div>
+
+  <!-- ============ 视图：菜品详情 ============ -->
+  <div class="view" id="view-detail">
+    <div class="nav">
+      <div class="back" onclick="go('home')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </div>
+      <div class="title">菜品详情</div>
+      <div class="placeholder"></div>
+    </div>
+    <div class="view-scroll">
+      <div class="dish-img">
+        <svg viewBox="0 0 64 64" fill="none" stroke="#8fb39e" stroke-width="1.6" stroke-linecap="round">
+          <path d="M10 30h44a22 22 0 0 1-44 0Z"/>
+          <path d="M14 38c4 6 10 9 18 9s14-3 18-9"/>
+          <path d="M22 24c1.5-2 3-3 5-3M32 22c1.5-2 3-3 5-3"/>
+        </svg>
+      </div>
+      <div class="dish-body">
+        <div class="dish-top">
+          <div>
+            <div class="dish-name" id="d-name"></div>
+            <div class="dish-desc" id="d-desc"></div>
+          </div>
+          <div class="dish-price"><span class="yen">¥</span><span id="d-price"></span></div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-label">忌口（不加）</div>
+        <div class="chips" id="chips-avoid"></div>
+      </div>
+      <div class="section">
+        <div class="section-label">加料</div>
+        <div class="chips" id="chips-add"></div>
+      </div>
+      <div class="qty-row">
+        <div class="lab">份数</div>
+        <div class="stepper">
+          <button id="minus" onclick="changeQty(-1)">−</button>
+          <div class="num" id="qty">1</div>
+          <button id="plus" onclick="changeQty(1)">＋</button>
+        </div>
+      </div>
+    </div>
+    <div class="footer">
+      <div class="total">
+        <div class="t-label">小计</div>
+        <div class="t-price"><span class="yen">¥</span><span id="subtotal">47</span></div>
+      </div>
+      <button class="btn" onclick="addToCart()">加</button>
+    </div>
+  </div>
+
+  <!-- ============ 视图：订单确认 ============ -->
+  <div class="view" id="view-confirm">
+    <div class="nav">
+      <div class="back" onclick="go('home')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </div>
+      <div class="title">确认订单</div>
+      <div class="placeholder"></div>
+    </div>
+    <div class="view-scroll">
+      <div class="cart-list" id="cart-list"></div>
+      <div class="field">
+        <div class="field-label">门牌号</div>
+        <input id="order-room" autocomplete="off">
+      </div>
+      <div class="field">
+        <div class="field-label">期望送达时间</div>
+        <div class="chips" id="chips-delivery">
+          <div class="chip on" data-d="尽快送达">尽快送达</div>
+          <div class="chip" data-d="预定">预定（时间写在备注）</div>
+        </div>
+      </div>
+      <div class="note">
+        <textarea id="order-note" placeholder="备注"></textarea>
+      </div>
+    </div>
+    <div class="footer">
+      <div class="total">
+        <div class="t-label">合计</div>
+        <div class="t-price"><span class="yen">¥</span><span id="grand-total">0</span></div>
+      </div>
+      <button class="btn" id="submit-btn" onclick="submitOrder()">提交订单</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  /* ===== 邮件收件箱（FormSubmit） ===== */
+  const RECEIVER_EMAIL = "vincent_zhw@zohomail.com";
+  const MAIL_ENDPOINT = "https://formsubmit.co/ajax/" + RECEIVER_EMAIL;
+
+  /* ===== 菜品数据 ===== */
+  const DISH = {
+    id: 1,
+    name: "牛肉末蛋炒饭",
+    base: 47,
+    desc: "米饭、鸡蛋、牛肉末、洋葱、小葱、蒜酥等（默认微微辣）",
+    avoids: ["不加小葱", "不加洋葱", "不加蒜酥"],
+    extras: [
+      { name: "加小葱", price: 3 },
+      { name: "加洋葱", price: 3 },
+      { name: "加蒜酥", price: 3 },
+      { name: "加蛋",   price: 5 },
+      { name: "加肉末", price: 10 }
+    ]
+  };
+
+  /* ===== 状态 ===== */
+  let cart = [];
+  let cur = { avoids: new Set(), extras: new Map(), qty: 1 };
+  let deliveryType = '尽快送达';
+
+  /* ===== 视图切换 ===== */
+  function go(view){
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    document.getElementById('view-'+view).classList.add('active');
+    if(view==='home') renderMenu();
+    if(view==='confirm') renderCart();
+  }
+
+  /* ===== 首页菜单 ===== */
+  function renderMenu(){
+    const list = document.getElementById('menu-list');
+    list.innerHTML = `
+      <div class="menu-card" onclick="openDetail()">
+        <div class="menu-thumb">
+          <svg viewBox="0 0 64 64" fill="none" stroke="#8fb39e" stroke-width="1.6" stroke-linecap="round">
+            <path d="M10 30h44a22 22 0 0 1-44 0Z"/>
+            <path d="M14 38c4 6 10 9 18 9s14-3 18-9"/>
+            <path d="M22 24c1.5-2 3-3 5-3M32 22c1.5-2 3-3 5-3"/>
+          </svg>
+        </div>
+        <div class="menu-info">
+          <div class="n">${DISH.name}</div>
+          <div class="d">${DISH.desc}</div>
+          <div class="p"><span class="yen">¥</span>${DISH.base} 起</div>
+        </div>
+      </div>`;
+    const count = cart.reduce((s,i)=>s+i.qty,0);
+    const badge = document.getElementById('cart-badge');
+    badge.style.display = count>0 ? 'flex' : 'none';
+    badge.textContent = count;
+  }
+
+  /* ===== 详情页 ===== */
+  function openDetail(){
+    cur = { avoids: new Set(), extras: new Map(), qty: 1 };
+    document.getElementById('d-name').textContent = DISH.name;
+    document.getElementById('d-desc').textContent = DISH.desc;
+    document.getElementById('d-price').textContent = DISH.base;
+
+    const avoidBox = document.getElementById('chips-avoid');
+    avoidBox.innerHTML = '';
+    DISH.avoids.forEach(a=>{
+      const el = document.createElement('div');
+      el.className = 'chip'; el.dataset.opt = a; el.textContent = a;
+      el.onclick = ()=>toggleAvoid(a, el);
+      avoidBox.appendChild(el);
+    });
+
+    const addBox = document.getElementById('chips-add');
+    addBox.innerHTML = '';
+    DISH.extras.forEach(e=>{
+      const el = document.createElement('div');
+      el.className = 'chip'; el.dataset.opt = e.name;
+      el.innerHTML = `${e.name}<span class="add">+¥${e.price}</span>`;
+      el.onclick = ()=>toggleExtra(e, el);
+      addBox.appendChild(el);
+    });
+
+    syncQty();
+    go('detail');
+  }
+
+  function toggleAvoid(a, el){
+    if(cur.avoids.has(a)){ cur.avoids.delete(a); el.classList.remove('on'); }
+    else{ cur.avoids.add(a); el.classList.add('on'); }
+  }
+  function toggleExtra(e, el){
+    if(cur.extras.has(e.name)){ cur.extras.delete(e.name); el.classList.remove('on'); }
+    else{ cur.extras.set(e.name, e.price); el.classList.add('on'); }
+    updateSubtotal();
+  }
+  function changeQty(d){
+    cur.qty = Math.max(1, Math.min(9, cur.qty + d));
+    syncQty();
+  }
+  function syncQty(){
+    document.getElementById('qty').textContent = cur.qty;
+    document.getElementById('minus').disabled = cur.qty <= 1;
+    updateSubtotal();
+  }
+  function linePrice(){
+    const extraSum = [...cur.extras.values()].reduce((s,p)=>s+p,0);
+    return (DISH.base + extraSum) * cur.qty;
+  }
+  function updateSubtotal(){
+    document.getElementById('subtotal').textContent = linePrice();
+  }
+
+  /* ===== 加入购物车 ===== */
+  function addToCart(){
+    const extras = [...cur.extras.entries()].map(([name,price])=>({name,price}));
+    cart.push({
+      id: DISH.id, name: DISH.name, base: DISH.base,
+      avoids: [...cur.avoids], extras, qty: cur.qty, linePrice: linePrice()
+    });
+    toast('已加入');
+    go('home');
+  }
+
+  /* ===== 确认页 ===== */
+  function renderCart(){
+    const box = document.getElementById('cart-list');
+    if(cart.length === 0){
+      box.innerHTML = '<div class="empty">还没有点菜</div>';
+      document.getElementById('grand-total').textContent = '0';
+      return;
+    }
+    box.innerHTML = cart.map((it)=>{
+      const opts = [
+        ...it.avoids.map(a=>`<span class="tag">${a}</span>`),
+        ...it.extras.map(e=>`<span class="tag">${e.name} +¥${e.price}</span>`)
+      ].join('');
+      return `
+        <div class="cart-item">
+          <div class="ci-top">
+            <div class="ci-name">${it.name}</div>
+            <div class="ci-price"><span class="yen">¥</span>${it.linePrice}</div>
+          </div>
+          ${opts ? `<div class="ci-opts">${opts}</div>` : ''}
+          <div class="ci-qty">× ${it.qty}</div>
+        </div>`;
+    }).join('');
+    const total = cart.reduce((s,it)=>s+it.linePrice,0);
+    document.getElementById('grand-total').textContent = total;
+  }
+
+  /* ===== 送达时间选项 ===== */
+  function initDelivery(){
+    document.querySelectorAll('#chips-delivery .chip').forEach(el=>{
+      el.onclick = ()=>{
+        document.querySelectorAll('#chips-delivery .chip').forEach(c=>c.classList.remove('on'));
+        el.classList.add('on');
+        deliveryType = el.dataset.d;
+        document.getElementById('order-note').placeholder =
+          deliveryType === '预定' ? '填写期望送达时间，例如 18:30' : '备注';
+      };
+    });
+  }
+
+  /* ===== 提交订单 → 发邮件（FormSubmit） ===== */
+  async function submitOrder(){
+    if(cart.length === 0){ toast('还没有点菜'); return; }
+    const room = document.getElementById('order-room').value.trim();
+    const note = document.getElementById('order-note').value.trim();
+    const total = cart.reduce((s,it)=>s+it.linePrice,0);
+    const orderId = "LZ-" + Date.now().toString().slice(-6);
+    const timeStr = new Date().toLocaleString('zh-CN', { hour12:false });
+
+    // 组装订单明细文本
+    const detailLines = cart.map((it,i)=>{
+      const opts = [...it.avoids, ...it.extras.map(e=>`${e.name} +¥${e.price}`)];
+      const optStr = opts.length ? `（${opts.join('，')}）` : '';
+      return `${i+1}. ${it.name} ×${it.qty}${optStr}　小计 ¥${it.linePrice}`;
+    });
+    const message = [
+      `订单编号：${orderId}`,
+      `下单时间：${timeStr}`,
+      `门牌号：${room || '未填写'}`,
+      `送达方式：${deliveryType}`,
+      ``,
+      `菜品明细：`,
+      ...detailLines,
+      ``,
+      `备注：${note || '无'}`,
+      `合计：¥${total}`
+    ].join('\n');
+
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true;
+    btn.textContent = '提交中…';
+
+    try{
+      const fd = new FormData();
+      fd.append('_subject', `留子厨房 新订单 #${orderId}`);
+      fd.append('_template', 'table');
+      fd.append('订单编号', orderId);
+      fd.append('下单时间', timeStr);
+      fd.append('门牌号', room || '未填写');
+      fd.append('送达方式', deliveryType);
+      fd.append('备注', note || '无');
+      fd.append('合计', `¥${total}`);
+      fd.append('订单明细', message);
+
+      const res = await fetch(MAIL_ENDPOINT, { method:'POST', body: fd });
+      const json = await res.json().catch(()=>({}));
+      if(!res.ok || json.success === false) throw new Error('mail failed');
+
+      // 清空
+      cart = [];
+      document.getElementById('order-room').value = '';
+      document.getElementById('order-note').value = '';
+      deliveryType = '尽快送达';
+      document.querySelectorAll('#chips-delivery .chip').forEach(c=>{
+        c.classList.toggle('on', c.dataset.d === '尽快送达');
+      });
+      document.getElementById('order-note').placeholder = '备注';
+      toast('订单已提交，已发送到邮箱');
+      setTimeout(()=>go('home'), 1000);
+    }catch(e){
+      toast('发送失败，请检查网络后重试');
+    }finally{
+      btn.disabled = false;
+      btn.textContent = '提交订单';
+    }
+  }
+
+  /* ===== Toast ===== */
+  let timer;
+  function toast(msg){
+    const el = document.getElementById('toast');
+    el.textContent = msg; el.classList.add('show');
+    clearTimeout(timer);
+    timer = setTimeout(()=>el.classList.remove('show'), 2600);
+  }
+
+  initDelivery();
+  renderMenu();
+</script>
+</body>
+</html>
