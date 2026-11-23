@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>留子厨房 LZ Kitchen</title>
+<meta property="og:title" content="留子厨房 LZ Kitchen">
+<meta property="og:description" content="线上点餐，下单订单">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://vincentzhwww.github.io/LZ-Kitchen/">
 <style>
   :root{
     --bg:#ffffff;
@@ -513,7 +517,7 @@
         c.classList.toggle('on', c.dataset.d === '尽快送达');
       });
       document.getElementById('order-note').placeholder = '备注';
-      toast('订单已提交，已发送到邮箱');
+      toast('订单已提交');
       setTimeout(()=>go('home'), 1000);
     }catch(e){
       toast('发送失败，请检查网络后重试');
