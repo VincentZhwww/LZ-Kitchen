@@ -4,10 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>留子厨房 LZ Kitchen</title>
-<meta property="og:title" content="留子厨房 LZ Kitchen">
-<meta property="og:description" content="线上点餐，下单订单">
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://vincentzhwww.github.io/LZ-Kitchen/">
 <style>
   :root{
     --bg:#ffffff;
@@ -214,12 +210,8 @@
       <div class="placeholder"></div>
     </div>
     <div class="view-scroll">
-      <div class="dish-img">
-        <svg viewBox="0 0 64 64" fill="none" stroke="#8fb39e" stroke-width="1.6" stroke-linecap="round">
-          <path d="M10 30h44a22 22 0 0 1-44 0Z"/>
-          <path d="M14 38c4 6 10 9 18 9s14-3 18-9"/>
-          <path d="M22 24c1.5-2 3-3 5-3M32 22c1.5-2 3-3 5-3"/>
-        </svg>
+      <div class="dish-img" style="background:none;padding:0;">
+	<img src="friedrice01.webp" alt="牛肉末蛋炒饭" style="width:100%;height:100%;object‑fit:cover;border‑radius:18px;">
       </div>
       <div class="dish-body">
         <div class="dish-top">
@@ -334,13 +326,9 @@
     const list = document.getElementById('menu-list');
     list.innerHTML = `
       <div class="menu-card" onclick="openDetail()">
-        <div class="menu-thumb">
-          <svg viewBox="0 0 64 64" fill="none" stroke="#8fb39e" stroke-width="1.6" stroke-linecap="round">
-            <path d="M10 30h44a22 22 0 0 1-44 0Z"/>
-            <path d="M14 38c4 6 10 9 18 9s14-3 18-9"/>
-            <path d="M22 24c1.5-2 3-3 5-3M32 22c1.5-2 3-3 5-3"/>
-          </svg>
-        </div>
+        <div class="menu-thumb" style="background:none;padding:0;">
+  		<img src="friedrice01.webp" alt="牛肉末蛋炒饭" style="width:100%;height:100%;object‑fit:cover;border‑radius:14px;">
+	</div>
         <div class="menu-info">
           <div class="n">${DISH.name}</div>
           <div class="d">${DISH.desc}</div>
@@ -517,7 +505,7 @@
         c.classList.toggle('on', c.dataset.d === '尽快送达');
       });
       document.getElementById('order-note').placeholder = '备注';
-      toast('订单已提交');
+      toast('订单已提交，已发送到邮箱');
       setTimeout(()=>go('home'), 1000);
     }catch(e){
       toast('发送失败，请检查网络后重试');
