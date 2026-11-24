@@ -448,8 +448,8 @@
     });
   }
 
-  /* ===== 提交订单 → 发邮件（FormSubmit） ===== */
-  async function submitOrder(){
+ /* ===== 提交订单 → 发邮件（FormSubmit｜乐观UI优化版） ===== */
+async function submitOrder(){
     if(cart.length === 0){ toast('还没有点菜'); return; }
     const room = document.getElementById('order-room').value.trim();
     const note = document.getElementById('order-note').value.trim();
@@ -477,43 +477,56 @@
     ].join('\n');
 
     const btn = document.getElementById('submit-btn');
-    btn.disabled = true;
-    btn.textContent = '提交中…';
+
+    // ===== 乐观更新：立刻给用户反馈，不等待网络返回 =====
+    toast('订单已提交！');
+    // 立刻清空购物车、表单，跳转回首页，不再阻塞界面
+    cart = [];
+    document.getElementById('order-room').value = '';
+    document.getElementById('order-note').value = '';
+    deliveryType = '尽快送达';
+    document.querySelectorAll('#chips-delivery .chip').forEach(c=>{
+      c.classList.toggle('on', c.dataset.d === '尽快送达');
+    });
+    document.getElementById('order-note').placeholder = '备注';
+    setTimeout(()=>go('home'), 600);
+
+    // ===== 网络请求放到后台静默执行 =====
+    const fd = new FormData();
+    fd.append('_subject', `留子厨房 新订单 #${orderId}`);
+    fd.append('_template', 'table');
+    fd.append('订单编号', orderId);
+    fd.append('下单时间', timeStr);
+    fd.append('门牌号', room || '未填写');
+    fd.append('送达方式', deliveryType);
+    fd.append('备注', note || '无');
+    fd.append('合计', `¥${total}`);
+    fd.append('订单明细', message);
+
+    // 设置5秒超时，防止请求无限挂死
+    const controller = new AbortController();
+    const timeoutId = setTimeout(()=>controller.abort(),5000);
 
     try{
-      const fd = new FormData();
-      fd.append('_subject', `留子厨房 新订单 #${orderId}`);
-      fd.append('_template', 'table');
-      fd.append('订单编号', orderId);
-      fd.append('下单时间', timeStr);
-      fd.append('门牌号', room || '未填写');
-      fd.append('送达方式', deliveryType);
-      fd.append('备注', note || '无');
-      fd.append('合计', `¥${total}`);
-      fd.append('订单明细', message);
-
-      const res = await fetch(MAIL_ENDPOINT, { method:'POST', body: fd });
-      const json = await res.json().catch(()=>({}));
-      if(!res.ok || json.success === false) throw new Error('mail failed');
-
-      // 清空
-      cart = [];
-      document.getElementById('order-room').value = '';
-      document.getElementById('order-note').value = '';
-      deliveryType = '尽快送达';
-      document.querySelectorAll('#chips-delivery .chip').forEach(c=>{
-        c.classList.toggle('on', c.dataset.d === '尽快送达');
+      const res = await fetch(MAIL_ENDPOINT, {
+        method:'POST',
+        body: fd,
+        signal: controller.signal
       });
-      document.getElementById('order-note').placeholder = '备注';
-      toast('订单已提交，已发送到邮箱');
-      setTimeout(()=>go('home'), 1000);
+      clearTimeout(timeoutId);
+      const json = await res.json().catch(()=>({}));
+      if(!res.ok || json.success === false){
+        toast('⚠️邮件发送异常，请店主留意');
+      }
     }catch(e){
-      toast('发送失败，请检查网络后重试');
+      clearTimeout(timeoutId);
+      // 超时 / 网络错误，仅弹出警告，页面已经回到菜单
+      toast('⚠️网络较差，订单邮件可能发送失败');
     }finally{
       btn.disabled = false;
       btn.textContent = '提交订单';
     }
-  }
+}
 
   /* ===== Toast ===== */
   let timer;
